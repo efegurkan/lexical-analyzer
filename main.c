@@ -12,10 +12,27 @@
 
 /*Globals*/
 int charType;
+int nextToken;
 char nextChar;
+FILE *stw_fp, *fopen();
+
+/* Function Prototypes*/
+void getCh();
+void cleanSpace();
+int opTokenizer(char ch);
 
 int main()
 {
+    if((stw_fp=fopen("test.stw","r")) == NULL)
+        printf("E: Couldn't open test.stw\n");
+    else
+    {
+        getCh();
+        do
+        {
+/* TODO (efegurkan#1#): lexical analyzer */
+        }while(nextToken != EOF);
+    }
     return 0;
 }
 
@@ -35,4 +52,12 @@ void cleanSpace()
 {
     while (isspace(nextChar))
         getCh();
+}
+
+int opTokenizer(char ch)
+{
+    /* TODO (efegurkan#1#): Left, Right Paranthesis
+concat,trim,replace,eol
+assign */
+    return 0;
 }
