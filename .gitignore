@@ -11,6 +11,7 @@
 *.so.*
 *.dylib
 *.depend
+*.layout
 
 # Executables
 *.exe

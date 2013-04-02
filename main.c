@@ -11,6 +11,11 @@
 #define STR_LIT 10
 #define IDENTIFIER 11
 #define ASSIGNMENT 20
+#define LEFT_PAR 21
+#define RIGHT_PAR 22
+#define EOL 23
+#define CONCAT_OP 24
+#define TRIM_OP 25
 
 
 /*Globals*/
@@ -68,10 +73,37 @@ void cleanSpace()
 
 int opTokenizer(char ch)
 {
-    /* TODO (efegurkan#1#): Left, Right Paranthesis
-concat,trim,replace,eol
-assign */
-    return 0;
+    /* TODO (efegurkan#1#): replace , assign */
+
+    switch(ch)
+    {
+        case '(':
+           /* TODO (efegurkan#1#): add character */
+           nextToken = LEFT_PAR;
+           break;
+
+        case ')':
+            /* TODO (efegurkan#1#): add character */
+            nextToken = RIGHT_PAR;
+            break;
+
+        case ';':
+            /* TODO (efegurkan#1#): add character */
+            nextToken = EOL;
+            break;
+
+        case '+':
+            /* TODO (efegurkan#1#): add character */
+            nextToken = CONCAT_OP;
+            break;
+
+        case '/':
+            /* TODO (efegurkan#1#): add character */
+            nextToken = TRIM_OP;
+            break;
+
+    }
+    return nextToken;
 }
 
 int lex()
