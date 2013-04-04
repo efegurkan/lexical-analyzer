@@ -11,6 +11,7 @@
 #define STR_LIT 10
 #define IDENTIFIER 11
 #define COMMENT_ST 12
+#define COMMENT_END 13
 #define ASSIGNMENT_OP 20
 #define LEFT_PAR 21
 #define RIGHT_PAR 22
@@ -111,6 +112,13 @@ int opTokenizer(char ch)
                 nextToken = TRIM_OP;
                 stw_fp--;
             /* TODO (efegurkan#1#): add character */
+            break;
+
+        case '*':
+            getCh();
+            if (nextChar== '/')
+                nextToken = COMMENT_END;
+                /* TODO (efegurkan#1#): Else do error handling. */
             break;
 
         case '<':
