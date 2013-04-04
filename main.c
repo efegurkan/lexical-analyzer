@@ -10,12 +10,16 @@
 /*Token Codes*/
 #define STR_LIT 10
 #define IDENTIFIER 11
-#define ASSIGNMENT 20
+#define COMMENT_ST 12
+#define ASSIGNMENT_OP 20
 #define LEFT_PAR 21
 #define RIGHT_PAR 22
 #define EOL 23
 #define CONCAT_OP 24
 #define TRIM_OP 25
+#define TRUNC_OP 26
+#define REPL_OP_COLON 27
+#define REPL_OP_LESS 28
 
 
 /*Globals*/
@@ -23,6 +27,7 @@ int charType;
 int nextToken;
 int lexLength;
 char nextChar;
+long int position;
 FILE *stw_fp, *fopen();
 
 /* Function Prototypes*/
@@ -98,9 +103,37 @@ int opTokenizer(char ch)
             break;
 
         case '/':
+            position = ftell(stw_fp);
+            getCh();
+            if(nextChar == '*')
+                nextToken = COMMENT_ST;
+            else
+                nextToken = TRIM_OP;
+                stw_fp--;
             /* TODO (efegurkan#1#): add character */
-            nextToken = TRIM_OP;
             break;
+
+        case '<':
+            /* TODO (efegurkan#1#): add character */
+            nextToken = REPL_OP_LESS;
+            break;
+
+        case ':':
+            position = ftell(stw_fp);/*Take current position for possible errors*/
+            cleanSpace();
+            getCh();
+
+            if (nextChar == '=')/*Assignment*/
+                nextToken = ASSIGNMENT_OP;
+            else if(nextChar == '/')/*Truncation*/
+                nextToken = TRUNC_OP;
+            else if (nextToken == '"')/*Replacement.In case of encountering with a string literal*/
+                nextToken = REPL_OP_COLON;
+                stw_fp--;
+            /* TODO (efegurkan#1#): else error message */
+            /* TODO (efegurkan#1#): add character */
+            break;
+
 
     }
     return nextToken;
@@ -123,6 +156,10 @@ int lex()
                 getCh();
             }
             nextToken = IDENTIFIER;
+            break;
+
+        case DIGIT:
+            /*Error message*/
             break;
 
     }/*End of switch*/
