@@ -28,14 +28,16 @@ int charType;
 int nextToken;
 int lexLength;
 char nextChar;
+char lexeme[20];
 long int position;
-FILE *stw_fp, *fopen();
+FILE *stw_fp, *tkn_fp, *fopen();
 
 /* Function Prototypes*/
 void getCh();
 void cleanSpace();
 int opTokenizer(char ch);
 int lex();
+void addCh();
 
 int main()
 {
@@ -43,13 +45,37 @@ int main()
         printf("E: Couldn't open test.stw\n");
     else/*Success*/
     {
+        tkn_fp = fopen("tokens.tkn", "w");
         getCh();
         do
         {
-/* TODO (efegurkan#1#): lexical analyzer */
+            lex();
         }while(nextToken != EOF);
     }
     return 0;
+}
+
+/*Adds identifiers name to lexeme.*/
+void addCh()
+{
+    if ( lexLength <=19)
+    {
+        lexeme[lexLength++] = nextChar;
+        lexeme[lexLength] = 0;
+    }
+//    else
+    /* TODO (efegurkan#1#): error handling */
+}
+
+void stringLit()
+{
+    do
+    {
+        putc(nextChar,tkn_fp);
+        getCh();
+    }while(nextChar != '"');
+    putc(nextChar,tkn_fp);
+    getCh();
 }
 
 /*Gets next char of input and determines its type*/
@@ -73,33 +99,27 @@ void getCh()
 /*Calls getCh until nextChar is not space*/
 void cleanSpace()
 {
-    while (isspace(nextChar))
+    while (isspace(nextChar) || nextChar == '\n')
         getCh();
 }
 
 int opTokenizer(char ch)
 {
-    /* TODO (efegurkan#1#): replace , assign */
-
     switch(ch)
     {
         case '(':
-           /* TODO (efegurkan#1#): add character */
            nextToken = LEFT_PAR;
            break;
 
         case ')':
-            /* TODO (efegurkan#1#): add character */
             nextToken = RIGHT_PAR;
             break;
 
         case ';':
-            /* TODO (efegurkan#1#): add character */
             nextToken = EOL;
             break;
 
         case '+':
-            /* TODO (efegurkan#1#): add character */
             nextToken = CONCAT_OP;
             break;
 
@@ -111,7 +131,6 @@ int opTokenizer(char ch)
             else
                 nextToken = TRIM_OP;
                 stw_fp--;
-            /* TODO (efegurkan#1#): add character */
             break;
 
         case '*':
@@ -122,7 +141,6 @@ int opTokenizer(char ch)
             break;
 
         case '<':
-            /* TODO (efegurkan#1#): add character */
             nextToken = REPL_OP_LESS;
             break;
 
@@ -139,7 +157,23 @@ int opTokenizer(char ch)
                 nextToken = REPL_OP_COLON;
                 stw_fp--;
             /* TODO (efegurkan#1#): else error message */
-            /* TODO (efegurkan#1#): add character */
+            break;
+
+        case '"':
+            position = ftell(stw_fp);
+
+            do
+            {
+                getCh();
+            }while(nextChar!= EOF || nextChar != '"');
+
+            if (nextChar == '"')
+            {
+                fseek(stw_fp,position,SEEK_SET);
+                nextToken = STR_LIT;
+            }
+//            else if(nextChar == EOF)
+                /*Error message*/
             break;
 
 
@@ -156,11 +190,11 @@ int lex()
     {
         /*Identifiers*/
         case LETTER:
-            /* TODO (efegurkan#1#): add character */
+            addCh();
             getCh();
             while (charType == LETTER || charType == DIGIT)
             {
-                /* TODO (efegurkan#1#): add character */
+                addCh();
                 getCh();
             }
             nextToken = IDENTIFIER;
@@ -170,7 +204,17 @@ int lex()
             /*Error message*/
             break;
 
+        case OTHER:
+            opTokenizer(nextChar);
+            getCh();
+            break;
+
+        case EOF:
+            nextToken = EOF;
+            break;
+
     }/*End of switch*/
+    /* TODO (efegurkan#1#): if stringlit or identifier, add it to the token file */
 
     return nextToken;
 }
