@@ -155,7 +155,7 @@ int opTokenizer(char ch)
                 nextToken = TRUNC_OP;
             else if (nextToken == '"')/*Replacement.In case of encountering with a string literal*/
                 nextToken = REPL_OP_COLON;
-                stw_fp--;
+                fseek(stw_fp,position,SEEK_SET);
             /* TODO (efegurkan#1#): else error message */
             break;
 
@@ -170,6 +170,7 @@ int opTokenizer(char ch)
             if (nextChar == '"')
             {
                 fseek(stw_fp,position,SEEK_SET);
+                stw_fp--;
                 nextToken = STR_LIT;
             }
 //            else if(nextChar == EOF)
@@ -215,6 +216,17 @@ int lex()
 
     }/*End of switch*/
     /* TODO (efegurkan#1#): if stringlit or identifier, add it to the token file */
+    fprintf(tkn_fp,"%d",nextToken);
+    if (nextToken == STR_LIT)
+    {
+        stringLit();
+    }else if (nextToken == IDENTIFIER)
+        {
+            putc('"',tkn_fp);
+            fputs(lexeme, tkn_fp);
+            putc('"',tkn_fp);
+        }
+    putc(',',tkn_fp);
 
     return nextToken;
 }
