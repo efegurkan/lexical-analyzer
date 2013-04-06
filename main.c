@@ -29,7 +29,7 @@ int nextToken;
 int lexLength;
 char nextChar;
 char lexeme[20];
-long int position;
+long int position,position2;
 FILE *stw_fp, *tkn_fp, *fopen();
 
 /* Function Prototypes*/
@@ -130,7 +130,7 @@ int opTokenizer(char ch)
                 nextToken = COMMENT_ST;
             else
                 nextToken = TRIM_OP;
-                stw_fp--;
+                fseek(stw_fp,position,SEEK_SET);
             break;
 
         case '*':
@@ -154,8 +154,10 @@ int opTokenizer(char ch)
             else if(nextChar == '/')/*Truncation*/
                 nextToken = TRUNC_OP;
             else if (nextToken == '"')/*Replacement.In case of encountering with a string literal*/
-                nextToken = REPL_OP_COLON;
-                fseek(stw_fp,position,SEEK_SET);
+                {
+                    nextToken = REPL_OP_COLON;
+                    fseek(stw_fp,position,SEEK_SET);
+                }
             /* TODO (efegurkan#1#): else error message */
             break;
 
@@ -165,12 +167,12 @@ int opTokenizer(char ch)
             do
             {
                 getCh();
-            }while(nextChar!= EOF || nextChar != '"');
+            }while(nextChar!= EOF && nextChar != '"');
 
             if (nextChar == '"')
             {
-                fseek(stw_fp,position,SEEK_SET);
-                stw_fp--;
+                fseek(stw_fp,position-1,SEEK_SET);
+//                stw_fp--;
                 nextToken = STR_LIT;
             }
 //            else if(nextChar == EOF)
@@ -215,7 +217,6 @@ int lex()
             break;
 
     }/*End of switch*/
-    /* TODO (efegurkan#1#): if stringlit or identifier, add it to the token file */
     fprintf(tkn_fp,"%d",nextToken);
     if (nextToken == STR_LIT)
     {
