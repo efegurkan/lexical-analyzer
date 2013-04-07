@@ -10,8 +10,6 @@
 /*Token Codes*/
 #define STR_LIT 10
 #define IDENTIFIER 11
-#define COMMENT_ST 12
-#define COMMENT_END 13
 #define ASSIGNMENT_OP 20
 #define LEFT_PAR 21
 #define RIGHT_PAR 22
@@ -22,11 +20,14 @@
 #define REPL_OP_COLON 27
 #define REPL_OP_LESS 28
 
+/*Error Codes*/
+#define LONG_ID 100
 
 /*Globals*/
 int charType;
 int nextToken;
 int lexLength;
+int lineNo = 0;
 char nextChar;
 char lexeme[20];
 long int position,position2;
@@ -38,10 +39,11 @@ void cleanSpace();
 int opTokenizer(char ch);
 int lex();
 void addCh();
+void goStablePosition();
 
 int main()
 {
-    if((stw_fp=fopen("test.stw","r")) == NULL)/*Try to open test.stw*/
+    if((stw_fp=fopen("comment.stw","r")) == NULL)/*Try to open test.stw*/
         printf("E: Couldn't open test.stw\n");
     else/*Success*/
     {
@@ -63,8 +65,16 @@ void addCh()
         lexeme[lexLength++] = nextChar;
         lexeme[lexLength] = 0;
     }
-//    else
-    /* TODO (efegurkan#1#): error handling */
+    else
+    {
+        printf("E:Line %d: Identifier is too long!",lineNo);
+        goStablePosition(LONG_ID);
+    }
+}
+
+void goStablePosition(int errorCode)
+{
+    /* TODO (efegurkan#1#): go to next stable position via proper Error Code */
 }
 
 void stringLit()
@@ -94,6 +104,8 @@ void getCh()
     }
     else charType = EOF;
 
+    if(nextChar == '\n')
+        lineNo++;
 }
 
 /*Calls getCh until nextChar is not space*/
@@ -127,17 +139,31 @@ int opTokenizer(char ch)
             position = ftell(stw_fp);
             getCh();
             if(nextChar == '*')
-                nextToken = COMMENT_ST;
+            {
+                do
+                {
+                    getCh();
+                    if(nextChar=='*')
+                    {
+                        position2 = ftell(stw_fp);
+                        getCh();
+                        if(nextChar == '/')
+                        {
+                            nextToken = 0;
+                            break;
+                        }
+                        else
+                            fseek(stw_fp,position2,SEEK_SET);
+                    }
+                }while(nextChar != EOF);
+//                if (nextChar == EOF )
+                   /* TODO (efegurkan#1#): error handling if nextChar == EOF */
+            }
             else
+            {
                 nextToken = TRIM_OP;
                 fseek(stw_fp,position,SEEK_SET);
-            break;
-
-        case '*':
-            getCh();
-            if (nextChar== '/')
-                nextToken = COMMENT_END;
-                /* TODO (efegurkan#1#): Else do error handling. */
+            }
             break;
 
         case '<':
@@ -178,7 +204,7 @@ int opTokenizer(char ch)
 //            else if(nextChar == EOF)
                 /*Error message*/
             break;
-
+        /* TODO (efegurkan#1#): Unknown charachter error handling. */
 
     }
     return nextToken;
@@ -204,7 +230,7 @@ int lex()
             break;
 
         case DIGIT:
-            /*Error message*/
+            /* TODO (efegurkan#1#): Error handling */
             break;
 
         case OTHER:
@@ -217,17 +243,20 @@ int lex()
             break;
 
     }/*End of switch*/
-    fprintf(tkn_fp,"%d",nextToken);
-    if (nextToken == STR_LIT)
+    if (nextToken != 0)
     {
-        stringLit();
-    }else if (nextToken == IDENTIFIER)
+        fprintf(tkn_fp,"%d",nextToken);
+        if (nextToken == STR_LIT)
         {
-            putc('"',tkn_fp);
-            fputs(lexeme, tkn_fp);
-            putc('"',tkn_fp);
-        }
-    putc(',',tkn_fp);
+            stringLit();
+        }else if (nextToken == IDENTIFIER)
+            {
+                putc('"',tkn_fp);
+                fputs(lexeme, tkn_fp);
+                putc('"',tkn_fp);
+            }
+        putc(',',tkn_fp);
+    }
 
     return nextToken;
 }
