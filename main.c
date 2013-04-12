@@ -11,10 +11,6 @@
 /*Token Codes*/
 #define STR_LIT 10
 #define IDENTIFIER 11
-#define KEYWORD_READ 12
-#define KEYWORD_WRITE 13
-#define KEYWORD_TO 14
-#define KEYWORD_FROM 15
 #define ASSIGNMENT_OP 20
 #define LEFT_PAR 21
 #define RIGHT_PAR 22
@@ -24,6 +20,11 @@
 #define TRUNC_OP 26
 #define REPL_OP_COLON 27
 #define REPL_OP_LESS 28
+#define KEYWORD_READ 29
+#define KEYWORD_WRITE 30
+#define KEYWORD_TO 31
+#define KEYWORD_FROM 32
+
 
 /*Exception Codes*/
 #define EX_LONG_ID 100
@@ -56,6 +57,7 @@ void addCh();
 void goStablePosition(int errorCode);
 void exceptionHandler(int exception);
 int isKeyword();
+void printTokens();
 
 int main()
 {
@@ -77,6 +79,11 @@ int main()
         if (errorFlag != 0)
         {
             remove("tokens.tkn");
+        }else
+        {
+            tkn_fp = fopen("tokens.tkn","r");
+            printTokens();
+            fclose(tkn_fp);
         }
     }
     return 0;
@@ -316,6 +323,109 @@ int isKeyword()
 
     return IDENTIFIER;
 }
+
+/*Prints tokens to the console*/
+void printTokens()
+{
+    int tkn;
+    char ch;
+//    rewind(tkn_fp);
+
+    do
+    {
+        ch = getc(tkn_fp);
+
+        if(ch ==',')
+            ch = getc(tkn_fp);
+
+        if(ch != '-' && ch != EOF )
+        {
+
+            tkn = 10* (ch-'0');
+            ch = getc(tkn_fp);
+            tkn += (ch -'0');
+
+            switch(tkn)
+            {
+            case IDENTIFIER:
+                printf("identifier(");
+                break;
+
+            case STR_LIT:
+                printf("stringConstant(");
+                break;
+
+            case ASSIGNMENT_OP:
+                printf("assignmentOperator,");
+                break;
+
+            case LEFT_PAR:
+                printf("leftParanthesis,");
+                break;
+
+            case RIGHT_PAR:
+                printf("rightParanthesis,");
+                break;
+
+            case EOL:
+                printf("endOfLine,");
+                break;
+
+            case CONCAT_OP:
+                printf("concatenationOperator,");
+                break;
+
+            case TRIM_OP:
+                printf("trimmingOperator,");
+                break;
+
+            case TRUNC_OP:
+                printf("truncationOperator,");
+                break;
+
+            case REPL_OP_COLON:
+                printf("replacementOperatorColon,");
+                break;
+
+            case REPL_OP_LESS:
+                printf("replacementOperatorLessThanSign");
+                break;
+
+            case KEYWORD_READ:
+                printf("readKeyword,");
+                break;
+
+            case KEYWORD_FROM:
+                printf("fromKeyword,");
+                break;
+
+            case KEYWORD_WRITE:
+                printf("writeKeyword,");
+                break;
+
+            case KEYWORD_TO:
+                printf("toKeyword,");
+                break;
+            }
+
+            if (tkn == IDENTIFIER || tkn == STR_LIT)
+            {
+                do
+                {
+                    ch = getc(tkn_fp);
+                    printf("%c",ch);
+                }
+                while(ch !=',');
+                printf("),");
+            }
+        }
+        else
+            printf("endOfFile\n");
+
+    }
+    while(ch != '-' && ch != EOF);
+
+}
 /*Looks lexemes and decides the token charachters.*/
 int lex()
 {
@@ -324,7 +434,7 @@ int lex()
 
     switch(charType)
     {
-    /*Identifiers*/
+        /*Identifiers*/
     case LETTER:
         addCh();
         getCh();
