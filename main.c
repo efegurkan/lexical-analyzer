@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 /*Charachter types*/
 #define LETTER 0
@@ -10,6 +11,10 @@
 /*Token Codes*/
 #define STR_LIT 10
 #define IDENTIFIER 11
+#define KEYWORD_READ 12
+#define KEYWORD_WRITE 13
+#define KEYWORD_TO 14
+#define KEYWORD_FROM 15
 #define ASSIGNMENT_OP 20
 #define LEFT_PAR 21
 #define RIGHT_PAR 22
@@ -50,10 +55,11 @@ int lex();
 void addCh();
 void goStablePosition(int errorCode);
 void exceptionHandler(int exception);
+int isKeyword();
 
 int main()
 {
-    if((stw_fp=fopen("error.stw","r")) == NULL)/*Try to open test.stw*/
+    if((stw_fp=fopen("test.stw","r")) == NULL)/*Try to open test.stw*/
         printf("E: Couldn't open test.stw\n");
     else/*Success*/
     {
@@ -296,6 +302,20 @@ void exceptionHandler(int exception)
     errorFlag = 1;
 }
 
+/*Defines if the lexeme is a keyword or identifier*/
+int isKeyword()
+{
+    if(strcmp(lexeme,"READ") == 0)
+        return KEYWORD_READ;
+    else if (strcmp(lexeme,"WRITE") == 0)
+        return KEYWORD_WRITE;
+    else if (strcmp(lexeme, "TO") == 0)
+        return KEYWORD_TO;
+    else if (strcmp(lexeme,"FROM") == 0)
+        return KEYWORD_FROM;
+
+    return IDENTIFIER;
+}
 /*Looks lexemes and decides the token charachters.*/
 int lex()
 {
@@ -313,7 +333,8 @@ int lex()
             addCh();
             getCh();
         }
-        nextToken = IDENTIFIER;
+        nextToken = isKeyword();
+//        nextToken = IDENTIFIER;
         break;
 
     case DIGIT:
